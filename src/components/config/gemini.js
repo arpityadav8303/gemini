@@ -1,17 +1,27 @@
+/*
+ * Install the dependency: npm install @google/generative-ai
+ * Make sure your .env has VITE_GEMINI_API_KEY=...
+ */
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const runChat = async (prompt) => {
+  try {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // CHANGE THIS LINE: Use "gemini-pro" instead of "gemini-1.5-flash"
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-async function main() {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      { role: "user", parts: [{ text: "Explain how AI works in a few words" }] }
-    ],
-  });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text;
+  } catch (error) {
+    console.error("Error fetching from Gemini:", error);
+    return "Error: " + (error.message || "Unable to fetch response.");
+  }
+};
 
-  console.log(response.candidates[0].content.parts[0].text);
-}
-
-main();
+export default runChat;
